@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "exclude": [
+    "src/mock-server",
+    "node_modules",
+    "./build",
+    "./src/environment",
+    "./.env",
+    "./src/scripts",
+    "./3rd-party",
+    "./src/removed-unused-files/**"
+  ]
+}

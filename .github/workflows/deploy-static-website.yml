@@ -1,0 +1,122 @@
+name: Deploy Static Website
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - '**'
+      - '.github/workflows/deploy-static-website.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: nyo-solutions-website-deployments
+  CLOUDFRONT_DIST_ID_DEV: E5UDG0OCWYIHT
+  CLOUDFRONT_DIST_ID_PROD: E3TVXMQR2OACVD
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    strategy:
+      matrix:
+        environment: ${{
+            github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.environment)) ||
+            (github.event_name == 'push' && github.ref == 'refs/heads/main') && fromJson('["prod"]') ||
+            fromJson('["dev"]')
+          }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: package-lock.json
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build website
+      run: npm run build
+      env:
+        NODE_ENV: ${{ matrix.environment == 'prod' && 'production' || 'development' }}
+
+    - name: Set deployment variables
+      id: deploy-vars
+      run: |
+        if [ "${{ matrix.environment }}" = "prod" ]; then
+          echo "s3_path=prod/" >> $GITHUB_OUTPUT
+          echo "website_url=https://www.nyo.solutions" >> $GITHUB_OUTPUT
+          echo "cloudfront_dist_id=${{ env.CLOUDFRONT_DIST_ID_PROD }}" >> $GITHUB_OUTPUT
+        else
+          echo "s3_path=dev/" >> $GITHUB_OUTPUT
+          echo "website_url=https://dev.nyo.solutions" >> $GITHUB_OUTPUT
+          echo "cloudfront_dist_id=${{ env.CLOUDFRONT_DIST_ID_DEV }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Deploy to S3
+      run: |
+        echo "🚀 Deploying ${{ matrix.environment }} website..."
+        echo "   S3: s3://${{ env.S3_BUCKET }}/${{ steps.deploy-vars.outputs.s3_path }}"
+        echo "   URL: ${{ steps.deploy-vars.outputs.website_url }}"
+        
+        # Upload files to S3
+        aws s3 sync dist/ "s3://${{ env.S3_BUCKET }}/${{ steps.deploy-vars.outputs.s3_path }}" \
+          --delete \
+          --cache-control "max-age=86400" \
+          --exclude "*.html" \
+          --exclude "*.json"
+        
+        # Upload HTML files with no-cache
+        aws s3 sync dist/ "s3://${{ env.S3_BUCKET }}/${{ steps.deploy-vars.outputs.s3_path }}" \
+          --cache-control "no-cache" \
+          --include "*.html" \
+          --include "*.json"
+
+    - name: Invalidate CloudFront
+      run: |
+        echo "🔄 Invalidating CloudFront cache..."
+        INVALIDATION_ID=$(aws cloudfront create-invalidation \
+          --distribution-id "${{ steps.deploy-vars.outputs.cloudfront_dist_id }}" \
+          --paths "/${{ steps.deploy-vars.outputs.s3_path }}*" \
+          --query 'Invalidation.Id' \
+          --output text)
+        echo "✅ Invalidation created: $INVALIDATION_ID"
+
+    - name: Deployment summary
+      run: |
+        echo "## 🎉 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "**S3 Bucket:** ${{ env.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
+        echo "**S3 Path:** ${{ steps.deploy-vars.outputs.s3_path }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Website URL:** ${{ steps.deploy-vars.outputs.website_url }}" >> $GITHUB_STEP_SUMMARY
+        echo "**CloudFront:** ${{ steps.deploy-vars.outputs.cloudfront_dist_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🌐 **Visit:** [${{ steps.deploy-vars.outputs.website_url }}](${{ steps.deploy-vars.outputs.website_url }})" >> $GITHUB_STEP_SUMMARY 

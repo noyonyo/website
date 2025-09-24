@@ -1,0 +1,141 @@
+---
+description: Systematic process for task execution, investigation, and knowledge documentation
+globs: "*"
+alwaysApply: true
+---
+
+# Task Execution Process Framework
+
+## Investigation Process (MANDATORY for Complex Tasks)
+
+### Phase 1: Context Analysis (Quick Assessment)
+1. **Project State**: Use `codebase_search` to understand existing patterns
+2. **User Intent**: Parse explicit vs implicit requirements
+3. **Scope Definition**: Identify affected files, dependencies, constraints
+
+### Phase 2: Research Documentation (Thorough Investigation)
+1. **Create Investigation File**: `ai-docs/context/investigations/[task-name].md`
+2. **Online Research**: Use `web_search` for best practices, libraries, patterns
+3. **Codebase Analysis**: Document existing implementations and integration points
+4. **Decision Points**: Document options, trade-offs, recommendations
+
+### Phase 3: Task Planning (Comprehensive Planning)
+1. **Create Task Document**: `ai-docs/tasks/[date]-[task-name].md` using template
+2. **Implementation Plan**: Break down into phases with specific deliverables
+3. **Validation**: Verify findings with user before implementation
+
+## Required Output Formats
+
+### Investigation File Structure:
+```markdown
+# Investigation: [Task Name]
+
+## Context Analysis
+- **Existing Patterns**: [bullet points with file references]
+- **Dependencies**: [list with version constraints]
+- **Constraints**: [technical/business limitations]
+
+## Research Findings
+- **Best Practices**: [3-5 key insights with sources]
+- **Implementation Options**: [comparison table]
+- **Performance Considerations**: [specific metrics/benchmarks]
+
+## Recommendation
+- **Chosen Approach**: [clear decision with rationale]
+- **Implementation Plan**: [numbered steps with file paths]
+- **Risk Mitigation**: [potential issues and solutions]
+```
+
+### Task Document Structure:
+```markdown
+# Task: [Task Name] - [Date]
+
+## Chain-of-Thought Analysis
+[Use the 8-step reasoning process defined in task.mdc, including confidence scoring and assumption validation]
+
+## Self-Consistency Validation
+- [ ] No logical contradictions in recommendations
+- [ ] Technical approach aligns with existing constraints
+- [ ] All assumptions have been identified and validated
+- [ ] Confidence levels appropriate for decisions made
+
+## Implementation Plan
+[Numbered steps with specific file paths and deliverables]
+
+## Validation Criteria
+[How to verify successful completion]
+```
+
+## Knowledge Documentation Requirements
+
+### During Investigation:
+- **Pattern Documentation**: Document existing code patterns found
+- **Research Findings**: Summarize best practices, common pitfalls
+- **Decision Rationale**: Why specific approaches were chosen
+
+### After Implementation:
+- **Lessons Learned**: What worked well, what was challenging
+- **Pattern Updates**: Update existing pattern documentation
+- **Integration Points**: Document how changes connect to existing code
+
+## Task Execution Examples
+
+### Example 1: User Profile Management
+**User Request**: "Add user profile editing with image upload"
+
+**Process**: 
+- **Investigation File**: `ai-docs/context/investigations/user-profile-management.md`
+- **Task Document**: `ai-docs/tasks/2025-09-24-user-profile-management.md`
+- **Chain-of-Thought**: Apply 8-step reasoning from task.mdc
+- **Quality Gates**: Verify all checkpoints before proceeding
+
+### Example 2: Data Export Feature
+**User Request**: "Add CSV/PDF export functionality to tables"
+
+**Process**:
+- **Investigation File**: `ai-docs/context/investigations/data-export-feature.md` 
+- **Task Document**: `ai-docs/tasks/2025-09-24-data-export-feature.md`
+- **Frontend Complexity**: Check against complexity indicators in frontend-react-developer.mdc
+
+## Quality Gates
+
+### Before Implementation:
+- [ ] Context analysis completed
+- [ ] Online research documented (3+ sources cited)
+- [ ] Codebase patterns identified
+- [ ] Implementation options evaluated (3+ options)
+- [ ] Decision rationale documented
+- [ ] Chain-of-thought reasoning completed
+- [ ] Confidence assessment provided for key decisions
+- [ ] Assumptions explicitly identified and validated
+- [ ] Internal consistency check passed (no logical contradictions)
+- [ ] Technical feasibility confirmed
+- [ ] Constraint compatibility verified
+
+### During Implementation:
+- [ ] Progress documented in task file
+- [ ] Decisions captured with rationale
+- [ ] Challenges and solutions noted
+- [ ] Source verification for technical claims
+- [ ] Confidence levels updated as new information emerges
+- [ ] Assumption validity checked against implementation reality
+
+### After Implementation:
+- [ ] Lessons learned documented
+- [ ] Pattern updates noted
+- [ ] Integration points documented
+- [ ] Performance impact assessed
+
+## Context Management
+
+### File Organization:
+- `ai-docs/tasks/[date]-[task-name].md` - Main task document
+- `ai-docs/context/investigations/[task-name].md` - Research findings
+- `ai-docs/context/patterns/[pattern-name].md` - Reusable patterns
+- `cursor-temp/[task-name]-temp.md` - Temporary working notes
+
+### Content Guidelines:
+- Keep individual documents under 2000 words
+- Use references instead of copying large code blocks
+- Clean up temporary files after completion
+- Update pattern documentation with new learnings

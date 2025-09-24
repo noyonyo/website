@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+- shared components are files that are used in several pages.
+- core components are components without product specific logic
+- public contains the assets
+- update-icons.sh file creates the generated folder in src from the public folder according to the internal configuration. there is a dedicated script to run it
+- scripts for automated processes are under scrripts folder
+- component that has dependencies on other components can use core, shared components and components defined in its folder under components folder. create one when adding direct components and place there
+- each component has its own folder. the css modules file has the same name as the component.
+- prefer using *.ts files if it does not contain JSX
+- file names matches component names (e.g. MyComponent will be in my-component.tsx file and the style will be in my-component.module.scss, constants will be in constants.ts file and utils in utils.ts file, sub components in components/my-sub-component/my-sub-component.tsx)
+- do not add comments in files for explanations

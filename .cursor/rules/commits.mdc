@@ -1,0 +1,134 @@
+---
+description: when requested to commit changes
+globs: 
+alwaysApply: false
+---
+
+# Branch Protection Rules
+- NEVER commit directly to dev or main branches
+- All changes to dev and main must come through pull requests
+- If attempting to commit to protected branches (dev/main), create a new feature branch instead
+
+# Breaking Changes Check
+Before committing, check for breaking changes:
+
+1. Types of breaking changes:
+   - API changes (parameters, return types, endpoints)
+   - Renamed/removed functions, components, or props
+   - Database schema changes
+   - Configuration changes
+   - Dependencies version updates with breaking changes
+   - Changes in event handling or data flow
+   - Changes affecting backward compatibility
+
+2. If breaking changes detected:
+   - Use the BREAKING CHANGE footer in commit message:
+     ```
+     feat(api)!: change user authentication flow
+     
+     BREAKING CHANGE: `authenticate` now requires an API key parameter.
+     Previously authenticated requests will need to be updated.
+     ```
+   - The `!` after the scope indicates a breaking change
+   - Multiple breaking changes should be listed separately
+
+3. Examples of breaking changes:
+   ```
+   # API change
+   feat(auth)!: require 2FA for all users
+   BREAKING CHANGE: all authentication requests now require 2FA token
+
+   # Configuration change
+   feat(config)!: update storage configuration
+   BREAKING CHANGE: local storage version updated, requires cache clear
+   ```
+
+# Branch Status Check
+Before making changes:
+1. Check if branch might be already merged (including squash merges):
+   ```bash
+   # Get the common ancestor of current branch and dev
+   git merge-base HEAD dev
+
+   # Compare changes between common ancestor and current branch
+   git diff $(git merge-base HEAD dev) HEAD
+
+   # Look for similar changes in dev's history (check commit messages and diffs)
+   git log dev --grep="$(git log -1 --pretty=%B)"
+   git log -p dev
+   ```
+
+2. Signs branch might be already merged:
+   - Similar/identical changes found in dev's history
+   - Common ancestor is old (several weeks/months)
+   - Commit messages in dev contain keywords from your branch
+   - Files modified in your branch show similar changes in dev
+
+3. If branch appears to be merged:
+   - Ask user how to proceed
+   - Suggest options:
+     a. Create new branch from latest dev: `git checkout -b new-branch-name dev`
+     b. Compare changes explicitly: `git diff dev...HEAD` (three dots to see branch-only changes)
+     c. Interactive rebase to pick only new changes: `git rebase -i dev`
+     d. Start fresh if all changes are in dev: `git reset --hard origin/dev`
+
+4. For uncertain cases:
+   - Review PR history in GitHub UI
+   - Check closed PRs for similar changes
+   - Compare file contents directly between branches
+   - When in doubt, ask team members who worked on related features
+
+# Conventional Commit Format
+Format: `<type>(<scope>): <description>`
+
+Types:
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- style: Changes that do not affect the meaning of the code
+- refactor: A code change that neither fixes a bug nor adds a feature
+- perf: A code change that improves performance
+- test: Adding missing tests or correcting existing tests
+- chore: Changes to the build process or auxiliary tools
+
+Guidelines:
+- Use imperative mood in the description ("add" not "added" or "adds")
+- First line should not exceed 72 characters
+- Description should start with lowercase letter
+- No period at the end of the description
+- Optional body and footer should be separated by blank lines
+- Split commits when changes address multiple issues - one commit per logical change
+
+Examples:
+- feat(auth): add login functionality
+- fix(alerts): resolve notification display issue
+- refactor(api): simplify data fetching logic
+
+# Commit Process
+1. Before committing, verify current branch:
+   ```bash
+   git branch --show-current
+   ```
+
+2. If on protected branch (dev/main):
+   - Create and checkout new feature branch
+   - Push changes to the new branch
+   - Create a pull request
+
+3. If on feature branch:
+   - Proceed with commit as normal
+
+4. For multiple changes:
+   - Stage files selectively using `git add -p` or `git add <file>`
+   - Create separate commits for each logical change
+   - Each commit should be self-contained and address a single issue
+   - Example of splitting changes:
+     ```bash
+     # First commit for one fix
+     git add file1.ts
+     git commit -m "fix(auth): resolve login timeout issue"
+     
+     # Second commit for another fix
+     git add file2.ts
+     git commit -m "fix(ui): correct button alignment"
+     ```

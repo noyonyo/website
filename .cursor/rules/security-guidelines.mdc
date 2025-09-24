@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Safe commits
+
+- only perform commits and other github action to this repository
+- never delete a repository
+- do not delete or change files outside the repository root folder without explicit permission
+- review all AI-generated code before committing
+- restrict repository access and permissions
+- never expose sensitive repository information to public AI tools
+- keep a human in the review loop for all changes
+
+# Safe websearch and data protection
+
+- do not give personal details or code segmants to unapproved third parties
+- avoid exposing company assets to thirties
+- don't expose IP or private information to public AI engines
+- restrict data access for AI tools
+- add input and output validation checks when using AI services
+- encrypt sensitive data at rest and in transit
+- validate both input and output when using AI tools
+- be wary of prompt injection attacks in AI interactions

@@ -1,0 +1,185 @@
+---
+description: Enforces systematic task planning using AI task template for features and changes
+globs: "*"
+alwaysApply: true
+---
+# Task Planning Framework Rule
+
+## Overview
+This rule enforces the use of a structured task planning template (`ai-docs/templates/ai-task-template.md`) for complex development tasks. It ensures consistency, thoroughness, and proper tracking when implementing features that span multiple components or files.
+
+The rule prevents rushed, unplanned implementations that often lead to refactoring, missed requirements, and inconsistent code patterns. By requiring upfront planning for complex tasks, it maintains code quality and reduces technical debt.
+
+## Complex Task Recognition & Scoring:
+Rate each factor (1-5) and sum for complexity score:
+
+1. **Multiple unrelated actions** (1-5) - User request combines several different requirements that need coordination
+2. **Cross-cutting concerns** (1-5) - Multiple files in different project areas need modification  
+3. **Codebase investigation required** (1-5) - Understanding existing mechanisms/patterns before proceeding
+4. **Assumptions need validation** (1-5) - Many unknowns requiring research, testing, or user clarification
+5. **Library/technology research** (1-5) - General investigation of unfamiliar tools or approaches needed
+
+**Complexity Response:**
+- **Score 5-10**: Simple task - direct implementation with minimal documentation
+- **Score 11-15**: Moderate task - structured investigation and user validation
+- **Score 16-25**: Complex task - full systematic process with iteration cycles
+
+**Adaptive Process Control:**
+Combine complexity score with confidence assessment to determine process depth:
+- **High confidence (8-10) + Low complexity (5-10)**: Streamlined approach
+- **Low confidence (1-5) + High complexity (16-25)**: Deep investigation with multiple iterations
+- **Mixed scores**: Targeted research on uncertain areas, user validation on unclear requirements
+
+
+## Rule: Always Use Task Template for Complex Work
+1. **Never start** complex features (3+ components/files) without creating a task plan
+2. **Never skip** the template for system-wide changes, integrations, or migrations
+3. **Always create** a dated task document in `ai-docs/tasks/` before implementation
+4. **Always track** progress using the todo_write tool based on the implementation plan
+5. **Fix the root cause** by planning thoroughly instead of iterating through trial and error
+6. **Be concise** in order to not pollute the context. If it's too long, reading becomes an overhead
+7. **Memorize** critical parts of the implementation in dedicated files and reference them
+8. **Always Validate** using the tools at your disposal
+
+## Chain-of-Thought Reasoning (MANDATORY)
+For each task, AI MUST explicitly document:
+1. **Analysis**: "What exactly is being requested and why?"
+2. **Context Assessment**: "What existing patterns/constraints apply?"
+3. **Options Evaluation**: "What are 3+ implementation approaches and trade-offs?"
+4. **Decision Rationale**: "Why is this specific approach recommended?"
+5. **Risk Assessment**: "What could go wrong and how to mitigate?"
+6. **Confidence Assessment**: Rate confidence (1-10) for each decision and list what would increase certainty
+7. **Assumption Validation**: "What assumptions am I making that need verification?"
+8. **Alternative Perspectives**: "What other interpretations of requirements are possible?"
+
+
+## Handling Unplanned Changes
+1. **Stop implementation** - Pause all file changes
+2. **Assess impact** - How critical are the findings vs current plan?
+3. **Investigate thoroughly** - Use `web_search` and `codebase_search` 
+4. **Review alignment** - Does new information change the implementation plan?
+5. **Revert if needed** - Undo redundant changes before continuing
+
+
+
+## Common Violations and Solutions
+
+### Scenario: User request "Add user authentication system" (COMPREHENSIVE EXAMPLE)
+#### ❌ BAD: Jumping straight into complex implementation
+```typescript
+// User request: "Add user authentication system"
+// AI immediately starts creating auth components without planning
+
+// auth/login.tsx
+export function Login() {
+  // Implementing without understanding existing patterns
+  // Missing requirements, inconsistent with codebase
+}
+```
+#### ✅Expected Agent behavior:
+1. Using LLM general knowledge, it is a known complex issue. However, LLM knowledge is regarded as an unverified source of truth and needs to be verified with concrete resources.
+1.1. create a dedicated investigation file: `ai-docs/context/investigations/user-auth-system.md` and update with investigation findings
+1.2. General online investigation of the subject is conducted on implementation methods and understanding of user auth systems. Findings are written into the docs.
+2. Agent identified this is a complex task.
+4. Performed an in depth investigation online on user authentication systems for specific to this project. In this case React, NPM applications, reviewing known vendors and libraries that can assist + posts describing how it should be done on tech articles platforms such as 'Medium', stack overflow, github repositories and such.
+5. In-depth check of the project structure in order to understand what can fit our needs. search core_docs for `ai-docs/system-architecture/files-and-folders-structure.md`
+5.1. define the files and folders you will be working on in `ai-docs/context/core_docs/architecture/files-and-folders-structure.md`
+6. Ask the user for feedback on parts that have multiple implementation options and depend on different needs / requires further definition
+6.1. create or update the task definition file: `ai-docs/tasks/2025-09-24-user-auth-system.md` using `ai-docs/templates/ai-task-template.md`
+7. perform investigation online on authentication system implementation that fits the user refined needs
+7.1. update the documentation & investigation files.
+8. write investigation results to `ai-docs/context/investigations/user-auth-system.md` file.
+9. repeat 5-8 if there are still significant missing definitions and information until task is well defined and has supportive information that validates the correctness
+10. AI completes the definition of the implementation plan following the ai-task-template.md file structure
+10.1. Any unplanned logical issues found during investigation or critical code segments that were found should be added to the planning after verification with the user.
+10.2. Unplanned findings that causes changes to implementation plan should be verified by reviewing all code changes so far and the investigation files before performing them.
+11. verify implementation works using tools at your disposal. when tools are not working ask the user for feedback with concise test scenario.
+
+### ❌ BAD: Treating all requests the same
+```typescript
+// User request: "Update all components to new design system"
+// AI treats this as a simple task
+
+// Starts updating files one by one without coordination
+// Misses dependencies, breaks existing functionality
+```
+
+### ✅ GOOD: Recognize complexity and plan
+```typescript
+// User request: "Update all components to new design system"
+// AI recognizes this is a system-wide change
+
+// Creates: ai-docs/tasks/2024-01-15-design-system-migration.md
+// Plans phases, identifies all affected files
+// Implements with proper tracking and validation
+```
+
+## When You Think You Need to Skip Planning
+
+### Temptation: "This seems straightforward"
+```typescript
+// ❌ BAD
+// User: "Add user registration form"
+// AI: "I'll just create a form component..."
+// Result: Missing validation, accessibility, error handling
+
+// ✅ GOOD
+// User: "Add user registration form"
+// AI: "I'll create a detailed plan for this form feature using our planning framework"
+// Result: Complete implementation with all requirements covered
+```
+
+### Temptation: "User wants quick results"
+```typescript
+// ❌ BAD
+// User: "Implement search functionality"
+// AI: Immediately creates basic search without considering existing patterns
+// Result: Inconsistent with existing code, missing performance optimization
+
+// ✅ GOOD  
+// User: "Implement search functionality"
+// AI: "Let me create a comprehensive plan for the search functionality..."
+// Result: Consistent implementation following project patterns
+```
+
+## Alternative Solutions
+
+### 1. Simple Tasks - Direct Implementation
+For truly simple tasks that meet ALL these criteria:
+- Single file edit
+- No architectural decisions
+- No new patterns or components
+- Clear, unambiguous requirements
+
+```typescript
+// Example: "Fix the typo in the header"
+// Direct fix without template - this is appropriate
+```
+
+### 2. Quick Fixes with Documentation
+For urgent production fixes:
+- Document the quick fix approach
+- Note any technical debt created
+- Plan follow-up improvements
+
+```typescript
+// Example: Critical bug in production
+// 1. Apply minimal fix
+// 2. Document in comments
+// 3. Create task plan for proper solution
+```
+
+## Process Integration
+See task-execution-process.mdc for detailed execution methodology, output formats, and quality gates.
+
+## Checklist for the Assistant
+- [ ] Never start complex features without creating a task document
+- [ ] Never skip planning for system-wide changes or migrations
+- [ ] Always use the 8-step Chain-of-Thought reasoning process
+- [ ] Provide confidence assessment for key decisions
+- [ ] Validate all assumptions before proceeding
+- [ ] Perform internal consistency checks
+- [ ] Always create TODOs using todo_write based on the implementation plan
+- [ ] Fix the root cause through planning, don't iterate through trial and error
+
+Remember: Better to over-plan complex tasks than to refactor later due to missed requirements! The template ensures consistency with existing codebase patterns and prevents common mistakes.

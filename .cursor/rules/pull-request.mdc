@@ -1,0 +1,54 @@
+---
+description: pull request creation instructions
+globs: 
+alwaysApply: false
+---
+# Required Steps (in order)
+1. Monday Task ID:
+   - Extract the ID from the end of the branch name (numbers after last dash)
+   - Replace <monday-item-id> in the template with this ID
+   - Example: branch "feature/add-button-12345" → ID is "12345"
+   - If no ID in branch name, ask the user to provide it
+
+2. Description and Template:
+   - Use default github template at .github/pull_request_template.md
+   - ALWAYS create PR body by copying the template first: cp .github/pull_request_template.md pr-body.md
+   - Replace <!-- details --> with details about the changes this PR contains exactly where the placeholder is, preserving surrounding whitespace
+   - DO NOT add any extra newlines or modify existing formatting
+   - Ensure the Monday task link is in format: https://organization.monday.com/boards/2988776541/pulses/<monday-item-id>
+
+3. Checklist Management:
+   - Ask which tasks are relevant and which are completed
+   - For completed and relevant tasks: replace "[ ]" with "[x]"
+     Example: "- [x] checked DEV mode"
+   - For irrelevant tasks: wrap with "~" and mark with [x]
+     Example: "-   [x] ~checked MOCK mode~"
+
+# GitHub CLI Instructions
+When creating or updating pull requests using GitHub CLI (gh):
+- For multiline descriptions, use one of these methods:
+  1. Pipe echo with proper newlines:
+     ```bash
+     echo -e "Description with\nproper\nnewlines" | gh pr create --title "title" --body-file - --base dev
+     ```
+  2. Or use a temporary file:
+     ```bash
+     echo "Description with
+     proper
+     newlines" > pr_body.txt
+     gh pr create --title "title" --body-file pr_body.txt --base dev
+     ```
+- ALWAYS use --body-file with gh pr create/edit commands, NEVER use --body directly
+- Create the body file by copying the template: cp .github/pull_request_template.md pr-body.md
+- Use proper newline escapes (\n) when using echo -e
+- Maintain proper indentation in the description for readability
+- After PR creation, delete the temporary pr-body.md file
+
+CORRECT:
+## What does this PR contain
+Fixed bug in component
+
+INCORRECT:
+## What does this PR contain
+
+Fixed bug in component
